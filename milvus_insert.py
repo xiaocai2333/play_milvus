@@ -60,10 +60,10 @@ def insert_time_printer():
                 sys.stdout.write("\r\n")
             insert_time_printer.cur_partition = CurPartitionName
         print_insert_progress()
-        loop_monitor(0.1)
+        loop_monitor(1)
 
 
-insert_time_printer.cur_partition = ""
+insert_time_printer.cur_partition = "default"
 
 def loop_monitor(t):
     global globalInsertT
@@ -168,7 +168,7 @@ def prepare_collection(dataset):
         print(collection_name, " exist, and drop it")
         collection = Collection(collection_name)
         collection.drop()
-        print("drop")
+        print("drop collection ", collection_name)
 
     field1 = FieldSchema(name="id", dtype=DataType.INT64, description="int64", is_primary=True)
     field2 = FieldSchema(name="vec", dtype=DataType.FLOAT_VECTOR, description="float vector", dim=dim, is_primary=False)
@@ -185,10 +185,7 @@ def confirm_collection_insert(collection):
     if globalInsertT:
         globalInsertT.cancel()
 
-    print("number_entities:", nums)
-    partitions = collection.partitions
-    for p in partitions:
-            print("partition:num:", p.num_entities)
+    print("\nnumber_entities:", nums)
 
 def insert_collection(collection, dataset):
     loop_monitor(1)
