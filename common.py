@@ -28,6 +28,8 @@ IndexTypeIVF_FLAT = 'IVF_FLAT'
 DATASET_SIFT = "sift"
 DATASET_DEEP = "deep"
 
+DEFAULT_PARTITION_NAME = "_default"
+
 def raise_exception(msg):
     raise (Exception(msg))
 

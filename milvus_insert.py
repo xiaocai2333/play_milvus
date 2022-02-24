@@ -39,7 +39,7 @@ globalInsertT = None
 
 Spinner = spinning_cursor()
 
-CurPartitionName = "default"
+CurPartitionName = DEFAULT_PARTITION_NAME
 
 PartitionTotal = 20
 PartitionCur = 0
@@ -49,7 +49,7 @@ Cur = 0
 
 def print_insert_progress():
     sys.stdout.write("\r")
-    sys.stdout.write("Partition:%-5s Inserting:[%8d/%9d] Total:[%-9d/%-9d]" % (
+    sys.stdout.write("Partition:%-9s Inserting:[%8d/%9d] Total:[%-9d/%-9d]" % (
         CurPartitionName, PartitionCur, PartitionTotal, Cur, Total))
     sys.stdout.flush()
 
@@ -63,7 +63,7 @@ def insert_time_printer():
         loop_monitor(1)
 
 
-insert_time_printer.cur_partition = "default"
+insert_time_printer.cur_partition = DEFAULT_PARTITION_NAME
 
 def loop_monitor(t):
     global globalInsertT
@@ -104,6 +104,7 @@ def insert_dataset(collection, num, partition_num, gen_fnames_f):
         raise_exception("num %% partition_num must be zero")
 
     partition_names = ["p%d" % i for i in range(partition_num)]
+    partition_names[0] = DEFAULT_PARTITION_NAME
     cnt = num // partition_num
     PartitionTotal = cnt * PER_FILE_ROWS
     Total = PER_FILE_ROWS * num
@@ -113,7 +114,8 @@ def insert_dataset(collection, num, partition_num, gen_fnames_f):
         start = i * cnt
         end = start + cnt
         fnames = gen_fnames_f(start, end)
-        partition = collection.create_partition(p_name)
+        if p_name != DEFAULT_PARTITION_NAME:
+            partition = collection.create_partition(p_name)
         for fname in fnames:
             insert_afile_to_collection(collection, fname, p_name)
             PartitionCur += PER_FILE_ROWS
