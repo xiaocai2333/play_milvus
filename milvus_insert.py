@@ -22,11 +22,12 @@ from pymilvus import (
 from common import *
 
 ID_COUNTER = 0
-NUM_FILES = 5
-PARTITION_NUM = 5
+NUM_FILES = 10
+PARTITION_NUM = 1
 
 sift_dir_path = "/czsdata/sift1b/"
 sift_dir_path = "/test/milvus/raw_data/sift1b/"
+sift_dir_path = "/data/milvus/raw_data/zjlab"
 deep_dir_path = "/czsdata/deep1b/"
 deep_dir_path = "/test/milvus/raw_data/deep1b/"
 
@@ -84,7 +85,7 @@ def gen_deep1b_fnames(start, end):
 
 
 def gen_sift1b_fnames(start, end):
-    fmt = os.path.join(sift_dir_path, "binary_128d_%05d.npy")
+    fmt = os.path.join(sift_dir_path, "binary_768d_%05d.npy")
     return gen_fnames(fmt, start, end)
 
 
@@ -157,7 +158,7 @@ def prepare_collection(dataset):
     if dataset == DATASET_DEEP:
         dim = 96
     elif dataset == DATASET_SIFT:
-        dim = 128
+        dim = 768
     else:
         raise_exception("wrong dataset")
 

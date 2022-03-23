@@ -19,6 +19,7 @@ from common import *
 
 sift_dir_path = "/czsdata/sift1b/"
 sift_dir_path = "/test/milvus/raw_data/sift1b/"
+sift_dir_path = "/data/milvus/raw_data/zjlab"
 deep_dir_path = "/czsdata/deep1b/"
 deep_dir_path = "/test/milvus/raw_data/deep1b/"
 
@@ -77,7 +78,7 @@ def search_collection(collection, dataset, indextype):
             run_counter = run_counter + 1 
         aver_time = run_time * 1.0 / RUN_NUM
 
-        fmt_str = "%s: %s, aeverage_time, qps: "%(param_key, s_p)
+        fmt_str = "%s: %s, average_time, qps: "%(param_key, s_p)
         print(fmt_str)
         print(aver_time, NQ*1.0/aver_time)
 
