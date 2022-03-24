@@ -102,6 +102,15 @@ def create_index(collection, dataset, indextype, sync):
             create_sift_hnsw_index(collection, sync)
         else:
             raise_exception("wrong indextype")
+    elif dataset == DATASET_TAIP:
+        if indextype == IndexTypeIVF_FLAT:
+            CurIndexType = IndexTypeIVF_FLAT
+            create_sift_ivfflat_index(collection, sync)
+        elif indextype == IndexTypeHNSW:
+            CurIndexType = IndexTypeHNSW
+            create_sift_hnsw_index(collection, sync)
+        else:
+            raise_exception("wrong indextype")
     else:
         raise_exception("wrong dataset")
 

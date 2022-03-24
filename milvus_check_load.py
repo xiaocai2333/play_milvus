@@ -118,7 +118,7 @@ def confirm_collection_load(collection):
 def load_collection(collection, dataset, partitions):
     print("start to load")
     global LoadDone, globalLoadT
-    if dataset not in (DATASET_DEEP, DATASET_SIFT):
+    if dataset not in (DATASET_DEEP, DATASET_SIFT, DATASET_TAIP):
         raise_exception("wrong dataset")
     loop_load_monitor(1)
     collection = Collection(name=dataset)

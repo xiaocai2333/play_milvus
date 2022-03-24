@@ -22,14 +22,14 @@ from pymilvus import (
 from common import *
 
 ID_COUNTER = 0
-NUM_FILES = 10
+NUM_FILES = 2
 PARTITION_NUM = 1
 
 sift_dir_path = "/czsdata/sift1b/"
 sift_dir_path = "/test/milvus/raw_data/sift1b/"
-sift_dir_path = "/data/milvus/raw_data/zjlab"
 deep_dir_path = "/czsdata/deep1b/"
 deep_dir_path = "/test/milvus/raw_data/deep1b/"
+taip_dir_path = "/data/milvus/raw_data/zjlab"
 
 InsertDone = False
 
@@ -84,8 +84,13 @@ def gen_deep1b_fnames(start, end):
     return gen_fnames(fmt, start, end)
 
 
+def gen_taip1b_fnames(start, end):
+    fmt = os.path.join(taip_dir_path, "binary_768d_%05d.npy")
+    return gen_fnames(fmt, start, end)
+
+
 def gen_sift1b_fnames(start, end):
-    fmt = os.path.join(sift_dir_path, "binary_768d_%05d.npy")
+    fmt = os.path.join(sift_dir_path, "binary_128d_%05d.npy")
     return gen_fnames(fmt, start, end)
 
 
@@ -108,7 +113,7 @@ def insert_dataset(collection, num, partition_num, gen_fnames_f):
     partition_names[0] = DEFAULT_PARTITION_NAME
     cnt = num // partition_num
     PartitionTotal = cnt * PER_FILE_ROWS
-    Total = PER_FILE_ROWS * num
+    Total = PER_FILE_ROWS * num * 4
     for i, p_name in enumerate(partition_names, 0):
         CurPartitionName = p_name
         PartitionCur = 0
@@ -117,10 +122,11 @@ def insert_dataset(collection, num, partition_num, gen_fnames_f):
         fnames = gen_fnames_f(start, end)
         if p_name != DEFAULT_PARTITION_NAME:
             partition = collection.create_partition(p_name)
-        for fname in fnames:
-            insert_afile_to_collection(collection, fname, p_name)
-            PartitionCur += PER_FILE_ROWS
-            Cur += PER_FILE_ROWS
+        for _ in range(4):
+            for fname in fnames:
+                insert_afile_to_collection(collection, fname, p_name)
+                PartitionCur += PER_FILE_ROWS
+                Cur += PER_FILE_ROWS
         time.sleep(1)
 
 
@@ -148,6 +154,10 @@ def insert_deep_dataset(collection, num, partition_num):
     insert_dataset(collection, num, partition_num, gen_deep1b_fnames)
 
 
+def insert_taip_dataset(collection, num, partition_num):
+    insert_dataset(collection, num, partition_num, gen_taip1b_fnames)
+
+
 def connect_server(host):
     # configure milvus hostname and port
     print(f"\nCreate connection...")
@@ -158,6 +168,8 @@ def prepare_collection(dataset):
     if dataset == DATASET_DEEP:
         dim = 96
     elif dataset == DATASET_SIFT:
+        dim = 128
+    elif dataset == DATASET_TAIP:
         dim = 768
     else:
         raise_exception("wrong dataset")
@@ -196,6 +208,8 @@ def insert_collection(collection, dataset):
         insert_deep_dataset(collection, NUM_FILES, PARTITION_NUM)
     elif dataset == DATASET_SIFT:
         insert_sift_dataset(collection, NUM_FILES, PARTITION_NUM)
+    elif dataset == DATASET_TAIP:
+        insert_taip_dataset(collection, NUM_FILES, PARTITION_NUM)
     else:
         raise_exception("wrong dataset")
     
@@ -205,6 +219,8 @@ def create_index(collection, dataset, indextype):
             create_deep_ivfflat_index(collection, False)
         elif indextype == IndexTypeHNSW:
             create_deep_hnsw_index(collection, False)
+        elif indextype == "NONE":
+            print("do not create index")
         else:
             raise_exception("wrong indextype")
     elif dataset == DATASET_SIFT:
@@ -212,6 +228,8 @@ def create_index(collection, dataset, indextype):
             create_sift_ivfflat_index(collection, False)
         elif indextype == IndexTypeHNSW:
             create_sift_hnsw_index(collection, False)
+        elif indextype == "NONE":
+            print("do not create index")
         else:
             raise_exception("wrong indextype")
 
@@ -228,7 +246,7 @@ if __name__ == '__main__':
                         help="dataset: sift | deep", required=True)
 
     parser.add_argument('--index', type=str, nargs=1, 
-                        help="index: HNSW | IVF_FLAT", required=True)
+                        help="index: HNSW | IVF_FLAT | NONE", required=True)
 
     args = parser.parse_args()
     host = args.host[0]

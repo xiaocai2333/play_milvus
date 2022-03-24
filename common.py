@@ -27,6 +27,7 @@ IndexTypeIVF_FLAT = 'IVF_FLAT'
 
 DATASET_SIFT = "sift"
 DATASET_DEEP = "deep"
+DATASET_TAIP = "taip"
 
 DEFAULT_PARTITION_NAME = "_default"
 
@@ -34,7 +35,7 @@ def raise_exception(msg):
     raise (Exception(msg))
 
 def prepare_collection(dataset):
-    if dataset not in (DATASET_DEEP, DATASET_SIFT):
+    if dataset not in (DATASET_DEEP, DATASET_SIFT, DATASET_TAIP):
         raise_exception("wrong dataset")
 
     collection = Collection(name=dataset)
