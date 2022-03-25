@@ -112,7 +112,7 @@ def insert_dataset(collection, num, partition_num, gen_fnames_f):
     partition_names = ["p%d" % i for i in range(partition_num)]
     partition_names[0] = DEFAULT_PARTITION_NAME
     cnt = num // partition_num
-    PartitionTotal = cnt * PER_FILE_ROWS
+    PartitionTotal = cnt * PER_FILE_ROWS * 4
     Total = PER_FILE_ROWS * num * 4
     for i, p_name in enumerate(partition_names, 0):
         CurPartitionName = p_name

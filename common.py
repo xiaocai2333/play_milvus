@@ -49,8 +49,8 @@ def create_sift_hnsw_index(collection, sync):
                             index_params={'index_type': IndexTypeHNSW,
                                           'metric_type': 'L2',
                                           'params': {
-                                              "M": 12,  # int. 4~64
-                                              "efConstruction": 150  # int. 8~512
+                                              "M": 16,  # int. 4~64
+                                              "efConstruction": 250  # int. 8~512
                                           }})
     future.done()
 
