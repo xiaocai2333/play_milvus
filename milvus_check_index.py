@@ -108,7 +108,7 @@ def create_index(collection, dataset, indextype, sync):
             create_sift_ivfflat_index(collection, sync)
         elif indextype == IndexTypeHNSW:
             CurIndexType = IndexTypeHNSW
-            create_sift_hnsw_index(collection, sync)
+            create_taip_hnsw_index(collection, sync)
         else:
             raise_exception("wrong indextype")
     else:
@@ -141,8 +141,10 @@ if __name__ == '__main__':
     connect_server(host)
     try:
         collection = prepare_collection(dataset)
-        if index:
+        if index == "NONE":
+            collection.drop_index()
+        elif index:
             create_index(collection, dataset, index, False)
-        confirm_collection_index(collection)
+            confirm_collection_index(collection)
     finally:
         close()

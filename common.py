@@ -55,6 +55,20 @@ def create_sift_hnsw_index(collection, sync):
     future.done()
 
 
+def create_taip_hnsw_index(collection, sync):
+    _async = not sync
+    future = collection.create_index(field_name="vec",
+                            _async = _async,
+                            sync = sync,
+                            index_params={'index_type': IndexTypeHNSW,
+                                          'metric_type': 'L2',
+                                          'params': {
+                                              "M": 16,  # int. 4~64
+                                              "efConstruction": 250  # int. 8~512
+                                          }})
+    future.done()
+
+
 def create_deep_hnsw_index(collection, sync):
     _async = not sync
     future = collection.create_index(field_name="vec",
@@ -83,6 +97,19 @@ def create_sift_ivfflat_index(collection, sync):
 
 
 def create_deep_ivfflat_index(collection, sync):
+    _async = not sync
+    future = collection.create_index(field_name="vec",
+                            _async = _async,
+                            sync = sync,
+                            index_params={'index_type': IndexTypeIVF_FLAT,
+                                          'metric_type': 'IP',
+                                          'params': {
+                                              "nlist": 8192,  # int. 4~64
+                                          }})
+    future.done()
+
+
+def create_taip_ivfflat_index(collection, sync):
     _async = not sync
     future = collection.create_index(field_name="vec",
                             _async = _async,

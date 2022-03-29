@@ -22,7 +22,7 @@ from pymilvus import (
 from common import *
 
 ID_COUNTER = 0
-NUM_FILES = 2
+NUM_FILES = 250
 PARTITION_NUM = 1
 
 sift_dir_path = "/czsdata/sift1b/"
@@ -113,7 +113,7 @@ def insert_dataset(collection, num, partition_num, gen_fnames_f):
     partition_names[0] = DEFAULT_PARTITION_NAME
     cnt = num // partition_num
     PartitionTotal = cnt * PER_FILE_ROWS * 4
-    Total = PER_FILE_ROWS * num * 4
+    Total = PER_FILE_ROWS * num *4
     for i, p_name in enumerate(partition_names, 0):
         CurPartitionName = p_name
         PartitionCur = 0
@@ -228,6 +228,15 @@ def create_index(collection, dataset, indextype):
             create_sift_ivfflat_index(collection, False)
         elif indextype == IndexTypeHNSW:
             create_sift_hnsw_index(collection, False)
+        elif indextype == "NONE":
+            print("do not create index")
+        else:
+            raise_exception("wrong indextype")
+    elif dataset == DATASET_TAIP:
+        if indextype == IndexTypeIVF_FLAT:
+            create_taip_ivfflat_index(collection, False)
+        elif indextype == IndexTypeHNSW:
+            create_taip_hnsw_index(collection, False)
         elif indextype == "NONE":
             print("do not create index")
         else:

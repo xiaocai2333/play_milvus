@@ -26,6 +26,7 @@ deep_dir_path = "/test/milvus/raw_data/deep1b/"
 taip_dir_path = "/data/milvus/raw_data/zjlab"
 
 EF_SEARCHS = [50, 64, 80, 100, 128, 168, 200, 256]
+# EF_SEARCHS = [100, 128, 168, 200, 256]
 # EF_SEARCHS = [150]
 NPROBES = [4, 6, 8, 12, 16, 20, 24, 32, 40, 50, 64, 128]
 # NPROBES = [16]
@@ -33,8 +34,9 @@ NPROBES = [4, 6, 8, 12, 16, 20, 24, 32, 40, 50, 64, 128]
 TOPK = 50
 BNQ = 10000
 NQ = [1, 10, 100, 1000, 10000]
+# NQ = [1,10,100]
 QueryFName = "query.npy"
-RUN_NUM = 10
+RUN_NUM = 5
 ALL_QPS = 0.0
 
 Spinner = spinning_cursor()
@@ -46,10 +48,10 @@ def connect_server(host):
 
 def get_recall(r1, r2):
     recall = 0.0
-    for i in range(len(r1)):
+    for i in range(len(r2)):
         count = np.intersect1d(r1[i], r2[i]).shape[0]
-        recall += count/len(r1[i])
-    recall = recall/len(r1)
+        recall += count/len(r2[i])
+    recall = recall/len(r2)
     return recall
 
 
@@ -73,6 +75,7 @@ def search_collection(host, dataset, indextype):
         raise_exception("wrong dataset")
 
     queryData = np.load(query_fname)
+    # print(queryData)
     search_params = {"metric_type": metric_type, "params": {}}
     param_key = ""
     plist = []
@@ -87,7 +90,7 @@ def search_collection(host, dataset, indextype):
         run_counter = 0
         run_time = 0
         result = []
-        while (run_counter < RUN_NUM):
+        while (run_counter < 1):
             start = time.time()
             result = collection.search(query_list, "vec", search_params, TOPK, guarantee_timestamp=1)
             search_time = time.time() - start
@@ -133,8 +136,8 @@ def search_collection(host, dataset, indextype):
             aver_time = run_time * 1.0 / RUN_NUM
             qps = nq*1.0/aver_time
             ALL_QPS = ALL_QPS + qps
-            fmt_str = "nq: %s, %s: %s, average_time, qps, recall: " % (nq, param_key, s_p)
-            print(fmt_str)
+            print("nq: %s, %s: %s" % (nq, param_key, s_p))
+            print("average_time\t, qps\t, recall: ")
             print(aver_time, qps, get_recall(dataset_result[:nq], all_ids))
 
 # Press the green button in the gutter to run the script.
