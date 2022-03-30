@@ -23,7 +23,7 @@ from common import *
 
 ID_COUNTER = 0
 NUM_FILES = 250
-PARTITION_NUM = 1
+PARTITION_NUM = 4
 
 sift_dir_path = "/czsdata/sift1b/"
 sift_dir_path = "/test/milvus/raw_data/sift1b/"
@@ -106,27 +106,24 @@ def insert_dataset(collection, num, partition_num, gen_fnames_f):
         raise_exception("pass wrong function in insert_dataset")
 
     global PartitionCur, PartitionTotal, Cur, Total, CurPartitionName
-    if num % partition_num != 0:
-        raise_exception("num %% partition_num must be zero")
+    # if num % partition_num != 0:
+    #     raise_exception("num %% partition_num must be zero")
 
     partition_names = ["p%d" % i for i in range(partition_num)]
     partition_names[0] = DEFAULT_PARTITION_NAME
-    cnt = num // partition_num
-    PartitionTotal = cnt * PER_FILE_ROWS * 4
-    Total = PER_FILE_ROWS * num *4
+    cnt = num 
+    PartitionTotal = cnt * PER_FILE_ROWS
+    Total = PER_FILE_ROWS * num * partition_num
     for i, p_name in enumerate(partition_names, 0):
         CurPartitionName = p_name
         PartitionCur = 0
-        start = i * cnt
-        end = start + cnt
-        fnames = gen_fnames_f(start, end)
+        fnames = gen_fnames_f(0, num)
         if p_name != DEFAULT_PARTITION_NAME:
             partition = collection.create_partition(p_name)
-        for _ in range(4):
-            for fname in fnames:
-                insert_afile_to_collection(collection, fname, p_name)
-                PartitionCur += PER_FILE_ROWS
-                Cur += PER_FILE_ROWS
+        for fname in fnames:
+            insert_afile_to_collection(collection, fname, p_name)
+            PartitionCur += PER_FILE_ROWS
+            Cur += PER_FILE_ROWS
         time.sleep(1)
 
 

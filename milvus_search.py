@@ -16,6 +16,7 @@ from pymilvus import (
     Collection, Partition,
     connections, utility
 )
+from pymilvus.orm.types import CONSISTENCY_EVENTUALLY
 
 from common import *
 
@@ -92,7 +93,7 @@ def search_collection(host, dataset, indextype):
         result = []
         while (run_counter < 1):
             start = time.time()
-            result = collection.search(query_list, "vec", search_params, TOPK, guarantee_timestamp=1)
+            result = collection.search(query_list, "vec", search_params, TOPK, consistency_level=CONSISTENCY_EVENTUALLY)
             search_time = time.time() - start
             run_time = run_time + search_time
             run_counter = run_counter + 1
@@ -125,7 +126,7 @@ def search_collection(host, dataset, indextype):
             while(run_counter < RUN_NUM):
                 start = time.time()
                 search_params["params"][param_key] = s_p
-                result = collection.search(query_list, "vec", search_params, TOPK, guarantee_timestamp=1)
+                result = collection.search(query_list, "vec", search_params, TOPK, consistency_level=CONSISTENCY_EVENTUALLY)
                 search_time = time.time() - start
                 run_time = run_time + search_time
                 run_counter = run_counter + 1
