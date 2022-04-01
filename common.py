@@ -49,8 +49,8 @@ def create_sift_hnsw_index(collection, sync):
                             index_params={'index_type': IndexTypeHNSW,
                                           'metric_type': 'L2',
                                           'params': {
-                                              "M": 16,  # int. 4~64
-                                              "efConstruction": 250  # int. 8~512
+                                              "M": 4,  # int. 4~64
+                                              "efConstruction": 8  # int. 8~512
                                           }})
     future.done()
 
@@ -64,7 +64,7 @@ def create_taip_hnsw_index(collection, sync):
                                           'metric_type': 'L2',
                                           'params': {
                                               "M": 16,  # int. 4~64
-                                              "efConstruction": 250  # int. 8~512
+                                              "efConstruction": 256,  # int. 8~512
                                           }})
     future.done()
 
@@ -115,9 +115,9 @@ def create_taip_ivfflat_index(collection, sync):
                             _async = _async,
                             sync = sync,
                             index_params={'index_type': IndexTypeIVF_FLAT,
-                                          'metric_type': 'IP',
+                                          'metric_type': 'L2',
                                           'params': {
-                                              "nlist": 8192,  # int. 4~64
+                                              "nlist": 4096,  # int. 4~64
                                           }})
     future.done()
 

@@ -160,6 +160,9 @@ if __name__ == '__main__':
         collection = prepare_collection(dataset)
         if need_reload:
             load_collection(collection, dataset, partitions)
-        confirm_collection_load(collection)
+            confirm_collection_load(collection)
+        else:
+            collection.release()
+
     finally:
         close()

@@ -9,6 +9,7 @@ import os
 import numpy as np
 import signal
 import sys
+import time
 
 from threading import Timer
 
@@ -82,7 +83,7 @@ def create_index(collection, dataset, indextype, sync):
     global IndexDone, CurIndexType
     IndexDone = False
     modeStr = "synchronally" if sync else "asyncially"
-    print("sart building index %s"% modeStr)
+    print("start building index %s"% modeStr)
     loop_index_monitor(0.2)
     if dataset == DATASET_DEEP:
         if indextype == IndexTypeIVF_FLAT:
@@ -105,7 +106,7 @@ def create_index(collection, dataset, indextype, sync):
     elif dataset == DATASET_TAIP:
         if indextype == IndexTypeIVF_FLAT:
             CurIndexType = IndexTypeIVF_FLAT
-            create_sift_ivfflat_index(collection, sync)
+            create_taip_ivfflat_index(collection, sync)
         elif indextype == IndexTypeHNSW:
             CurIndexType = IndexTypeHNSW
             create_taip_hnsw_index(collection, sync)
@@ -144,7 +145,12 @@ if __name__ == '__main__':
         if index == "NONE":
             collection.drop_index()
         elif index:
+            start = time.time()
+            print("start create index: ", start)
             create_index(collection, dataset, index, False)
             confirm_collection_index(collection)
+            end = time.time()
+            print("create index end: ", end)
+            print("create index cost: ", end-start)
     finally:
         close()

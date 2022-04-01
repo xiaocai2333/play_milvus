@@ -6,9 +6,10 @@
 import argparse
 import time
 import os
-
+import random
 import signal
 import sys
+import time
 
 from threading import Timer
 import numpy as np
@@ -22,7 +23,7 @@ from pymilvus import (
 from common import *
 
 ID_COUNTER = 0
-NUM_FILES = 250
+NUM_FILES = 10
 PARTITION_NUM = 1
 
 sift_dir_path = "/czsdata/sift1b/"
@@ -106,43 +107,47 @@ def insert_dataset(collection, num, partition_num, gen_fnames_f):
         raise_exception("pass wrong function in insert_dataset")
 
     global PartitionCur, PartitionTotal, Cur, Total, CurPartitionName
-    if num % partition_num != 0:
-        raise_exception("num %% partition_num must be zero")
+    # if num % partition_num != 0:
+    #     raise_exception("num %% partition_num must be zero")
 
     partition_names = ["p%d" % i for i in range(partition_num)]
     partition_names[0] = DEFAULT_PARTITION_NAME
-    cnt = num // partition_num
-    PartitionTotal = cnt * PER_FILE_ROWS * 4
-    Total = PER_FILE_ROWS * num *4
+    cnt = num
+    PartitionTotal = cnt * PER_FILE_ROWS
+    Total = PER_FILE_ROWS * num * PARTITION_NUM
     for i, p_name in enumerate(partition_names, 0):
         CurPartitionName = p_name
         PartitionCur = 0
-        start = i * cnt
-        end = start + cnt
-        fnames = gen_fnames_f(start, end)
+        fnames = gen_fnames_f(0, num)
         if p_name != DEFAULT_PARTITION_NAME:
             partition = collection.create_partition(p_name)
-        for _ in range(4):
-            for fname in fnames:
-                insert_afile_to_collection(collection, fname, p_name)
-                PartitionCur += PER_FILE_ROWS
-                Cur += PER_FILE_ROWS
+        # for _ in range(4):
+        for fname in fnames:
+            # print(fname, p_name)
+            insert_afile_to_collection(collection, fname, p_name)
+            PartitionCur += PER_FILE_ROWS
+            Cur += PER_FILE_ROWS
         time.sleep(1)
 
 
 def insert_afile_to_collection(collection, fname, partition_name):
     global ID_COUNTER
+    start = time.time()
+    print("before insert time: ", start)
     data = np.load(fname)
     block_size = PER_FILE_ROWS
     entities = [
         [i for i in range(ID_COUNTER, ID_COUNTER + block_size)],
         data.tolist()
+        # [[random.random() for _ in range(768)] for _ in range(block_size)]
     ]
 
     insert_result = collection.insert(entities, partition_name=partition_name)
     if insert_result.insert_count != block_size:
         raise_exception("insert failed:%s" % fname)
-
+    end = time.time()
+    print("after insert time: ", end)
+    print("insert one file cost: ", end-start)
     ID_COUNTER = ID_COUNTER + block_size
 
 
@@ -188,7 +193,7 @@ def prepare_collection(dataset):
     field1 = FieldSchema(name="id", dtype=DataType.INT64, description="int64", is_primary=True)
     field2 = FieldSchema(name="vec", dtype=DataType.FLOAT_VECTOR, description="float vector", dim=dim, is_primary=False)
     schema = CollectionSchema(fields=[field1, field2], description="")
-    collection = Collection(name=collection_name, data=None, schema=schema, shards_num=2)
+    collection = Collection(name=collection_name, data=None, schema=schema, shards_num=1)
     return collection
 
 

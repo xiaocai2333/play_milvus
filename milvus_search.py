@@ -16,6 +16,7 @@ from pymilvus import (
     Collection, Partition,
     connections, utility
 )
+from pymilvus.orm.types import CONSISTENCY_EVENTUALLY
 
 from common import *
 
@@ -25,18 +26,18 @@ deep_dir_path = "/czsdata/deep1b/"
 deep_dir_path = "/test/milvus/raw_data/deep1b/"
 taip_dir_path = "/data/milvus/raw_data/zjlab"
 
-EF_SEARCHS = [50, 64, 80, 100, 128, 168, 200, 256]
+# EF_SEARCHS = [50, 64, 80, 100, 128, 168, 200, 256]
 # EF_SEARCHS = [100, 128, 168, 200, 256]
-# EF_SEARCHS = [150]
-NPROBES = [4, 6, 8, 12, 16, 20, 24, 32, 40, 50, 64, 128]
-# NPROBES = [16]
+EF_SEARCHS = [50]
+# NPROBES = [4, 6, 8, 12, 16, 20, 24, 32, 40, 50, 64, 128]
+NPROBES = [1, 4, 6, 8, 16]
 
 TOPK = 50
-BNQ = 10000
-NQ = [1, 10, 100, 1000, 10000]
+BNQ = 1000
+NQ = [1]
 # NQ = [1,10,100]
 QueryFName = "query.npy"
-RUN_NUM = 5
+RUN_NUM = 1000
 ALL_QPS = 0.0
 
 Spinner = spinning_cursor()
@@ -92,12 +93,12 @@ def search_collection(host, dataset, indextype):
         result = []
         while (run_counter < 1):
             start = time.time()
-            result = collection.search(query_list, "vec", search_params, TOPK, guarantee_timestamp=1)
+            result = collection.search(query_list, "vec", search_params, TOPK, partition_names=['p1'], consistency_level=CONSISTENCY_EVENTUALLY)
             search_time = time.time() - start
             run_time = run_time + search_time
             run_counter = run_counter + 1
-            print("search cost:", search_time)
-        aver_time = run_time * 1.0 / RUN_NUM
+            print("search time cost:", search_time)
+        aver_time = run_time * 1.0
         qps = BNQ * 1.0 / aver_time
         fmt_str = "average_time, qps: "
         print(fmt_str)
@@ -105,6 +106,7 @@ def search_collection(host, dataset, indextype):
         all_ids = []
         for hits in result:
             all_ids.append(list(hits.ids))
+            # print(hits.distances)
         with open("result.txt", 'w') as f:
             f.write(json.dumps(all_ids))
         return
@@ -125,14 +127,19 @@ def search_collection(host, dataset, indextype):
             while(run_counter < RUN_NUM):
                 start = time.time()
                 search_params["params"][param_key] = s_p
-                result = collection.search(query_list, "vec", search_params, TOPK, guarantee_timestamp=1)
+                result = collection.search(query_list, "vec", search_params, TOPK, consistency_level=CONSISTENCY_EVENTUALLY)
                 search_time = time.time() - start
                 run_time = run_time + search_time
                 run_counter = run_counter + 1
-                print("search cost:", search_time)
-            all_ids = []
-            for hits in result:
-                all_ids.append(list(hits.ids))
+                # print("search cost:", search_time)
+                # for re in result:
+                #     print(re.ids)
+                #     print(re.distances)
+                all_ids = []
+                for hits in result:
+                    all_ids.append(list(hits.ids))
+                    # print(hits.distances)
+                # print(all_ids)
             aver_time = run_time * 1.0 / RUN_NUM
             qps = nq*1.0/aver_time
             ALL_QPS = ALL_QPS + qps
