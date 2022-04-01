@@ -112,18 +112,16 @@ def insert_dataset(collection, num, partition_num, gen_fnames_f):
 
     partition_names = ["p%d" % i for i in range(partition_num)]
     partition_names[0] = DEFAULT_PARTITION_NAME
-    cnt = num
+    cnt = num 
     PartitionTotal = cnt * PER_FILE_ROWS
-    Total = PER_FILE_ROWS * num * PARTITION_NUM
+    Total = PER_FILE_ROWS * num * partition_num
     for i, p_name in enumerate(partition_names, 0):
         CurPartitionName = p_name
         PartitionCur = 0
         fnames = gen_fnames_f(0, num)
         if p_name != DEFAULT_PARTITION_NAME:
             partition = collection.create_partition(p_name)
-        # for _ in range(4):
         for fname in fnames:
-            # print(fname, p_name)
             insert_afile_to_collection(collection, fname, p_name)
             PartitionCur += PER_FILE_ROWS
             Cur += PER_FILE_ROWS

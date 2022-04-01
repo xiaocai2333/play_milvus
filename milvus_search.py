@@ -93,7 +93,7 @@ def search_collection(host, dataset, indextype):
         result = []
         while (run_counter < 1):
             start = time.time()
-            result = collection.search(query_list, "vec", search_params, TOPK, partition_names=['p1'], consistency_level=CONSISTENCY_EVENTUALLY)
+            result = collection.search(query_list, "vec", search_params, TOPK, consistency_level=CONSISTENCY_EVENTUALLY)
             search_time = time.time() - start
             run_time = run_time + search_time
             run_counter = run_counter + 1
