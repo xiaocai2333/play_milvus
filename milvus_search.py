@@ -9,6 +9,7 @@ import os
 import signal
 import sys
 import multiprocessing
+import threading
 
 from threading import Timer
 import numpy as np
@@ -33,11 +34,11 @@ EF_SEARCHS = [50]
 NPROBES = [1, 4, 6, 8, 16]
 
 TOPK = 50
-BNQ = 1000
+BNQ = 10000
 NQ = [1]
-# NQ = [1,10,100]
+# NQ = [1,10,100,1000,10000]
 QueryFName = "query.npy"
-RUN_NUM = 1000
+RUN_NUM = 10000
 ALL_QPS = 0.0
 
 Spinner = spinning_cursor()
@@ -56,27 +57,29 @@ def get_recall(r1, r2):
     return recall
 
 
-def search_collection(host, dataset, indextype):
+# def search_collection(host, dataset, indextype):
+def search_collection(queryData, indextype):
     global ALL_QPS
-    connect_server(host)
-    collection = prepare_collection(dataset)
+    # connect_server(host)
+    # collection = prepare_collection(dataset)
     query_fname = ""
     metric_type = ""
-    if dataset == DATASET_DEEP:
-        metric_type = "IP"
-        query_fname = os.path.join(deep_dir_path, QueryFName)
-    elif dataset == DATASET_SIFT:
-        query_fname = os.path.join(sift_dir_path, QueryFName)
-        metric_type = "L2"
-    elif dataset == DATASET_TAIP:
-        query_fname = os.path.join(taip_dir_path, QueryFName)
-        metric_type = "L2"
-
-    if metric_type == "" or query_fname == "":
-        raise_exception("wrong dataset")
-
-    queryData = np.load(query_fname)
+    # if dataset == DATASET_DEEP:
+    #     metric_type = "IP"
+    #     query_fname = os.path.join(deep_dir_path, QueryFName)
+    # elif dataset == DATASET_SIFT:
+    #     query_fname = os.path.join(sift_dir_path, QueryFName)
+    #     metric_type = "L2"
+    # elif dataset == DATASET_TAIP:
+    #     query_fname = os.path.join(taip_dir_path, QueryFName)
+    #     metric_type = "L2"
+    #
+    # if metric_type == "" or query_fname == "":
+    #     raise_exception("wrong dataset")
+    #
+    # queryData = np.load(query_fname)
     # print(queryData)
+    metric_type = "L2"
     search_params = {"metric_type": metric_type, "params": {}}
     param_key = ""
     plist = []
@@ -114,10 +117,10 @@ def search_collection(host, dataset, indextype):
     if not plist:
         raise_exception("wrong dataset")
 
-    f = open("./result.txt")
-    dataset_result = f.read()
-    f.close()
-    dataset_result = json.loads(dataset_result)
+    # f = open("./result.txt")
+    # dataset_result = f.read()
+    # f.close()
+    # dataset_result = json.loads(dataset_result)
     for nq in NQ:
         query_list = queryData.tolist()[:nq]
         for s_p in plist:
@@ -135,17 +138,19 @@ def search_collection(host, dataset, indextype):
                 # for re in result:
                 #     print(re.ids)
                 #     print(re.distances)
-                all_ids = []
-                for hits in result:
-                    all_ids.append(list(hits.ids))
+                # all_ids = []
+                # for hits in result:
+                #     all_ids.append(list(hits.ids))
                     # print(hits.distances)
                 # print(all_ids)
             aver_time = run_time * 1.0 / RUN_NUM
             qps = nq*1.0/aver_time
             ALL_QPS = ALL_QPS + qps
             print("nq: %s, %s: %s" % (nq, param_key, s_p))
-            print("average_time\t, qps\t, recall: ")
-            print(aver_time, qps, get_recall(dataset_result[:nq], all_ids))
+            # print("average_time\t, vps\t, recall: ")
+            print("average_time\t, vps\t")
+            # print(aver_time, qps, get_recall(dataset_result[:nq], all_ids))
+            print(aver_time, qps)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -174,10 +179,19 @@ if __name__ == '__main__':
     print("IndexType", indextype)
     print("ProcessNum", process_num)
 
+    connect_server(host)
+    collection = prepare_collection(dataset)
+
+    query_fname = os.path.join(taip_dir_path, QueryFName)
+    queryData = np.load(query_fname)
+
     search_processes = []
+    # for i in range(process_num):
+    #     search_processes.append(multiprocessing.Process(target=search_collection,
+    #                                                     args=(host, dataset, indextype)))
     for i in range(process_num):
-        search_processes.append(multiprocessing.Process(target=search_collection,
-                                                        args=(host, dataset, indextype)))
+        search_processes.append(threading.Thread(target=search_collection,
+                                                 args=(queryData, indextype)))
     for p in search_processes:
         p.start()
     for p in search_processes:
